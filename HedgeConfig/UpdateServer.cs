@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Text.Json;
+using System.Net.Http;
 
 namespace HedgeConfig
 {
@@ -12,29 +13,46 @@ namespace HedgeConfig
             try
             {
                 var currentVersion = GetCurrentVersion();
-                if (!forcePrompt && currentVersion == null) return;
-                Version? remoteVersion = null;
-                if (!forcePrompt)
+                if (currentVersion == null && !forcePrompt) return;
+
+                Version? nextMinorRelease = null;
+                if (!forcePrompt && currentVersion != null)
                 {
-                    var latest = GetJson("https://api.github.com/repos/EM20080/HedgeConfig/releases/latest");
-                    if (!string.IsNullOrWhiteSpace(latest))
+                    var releasesJson = GetJson("https://api.github.com/repos/EM20080/HedgeConfig/releases?per_page=100");
+                    if (!string.IsNullOrWhiteSpace(releasesJson))
                     {
                         try
                         {
-                            using var doc = JsonDocument.Parse(latest);
-                            if (doc.RootElement.TryGetProperty("tag_name", out var tagProp))
+                            using var doc = JsonDocument.Parse(releasesJson);
+                            var allVersions = new List<Version>();
+                            foreach (var el in doc.RootElement.EnumerateArray())
                             {
-                                var tag = tagProp.GetString() ?? string.Empty;
-                                remoteVersion = ParseVersion(tag);
+                                if (el.TryGetProperty("tag_name", out var tagProp))
+                                {
+                                    var v = ParseVersion(tagProp.GetString() ?? string.Empty);
+                                    if (v != null) allVersions.Add(v);
+                                }
+                            }
+                            if (allVersions.Count > 0)
+                            {
+                                var candidateMinor = new Version(currentVersion.Major, currentVersion.Minor + 1, 0);
+                                var matching = allVersions
+                                    .Where(v => v.Major == currentVersion.Major && v.Minor == candidateMinor.Minor && v > currentVersion)
+                                    .OrderBy(v => v)
+                                    .FirstOrDefault();
+                                if (matching != null)
+                                    nextMinorRelease = matching;
                             }
                         }
                         catch { }
                     }
                 }
-                bool shouldPrompt = forcePrompt || (remoteVersion != null && currentVersion != null && remoteVersion > currentVersion);
+
+                bool shouldPrompt = forcePrompt || (nextMinorRelease != null && currentVersion != null && nextMinorRelease > currentVersion);
                 if (!shouldPrompt) return;
-                if (!forcePrompt && remoteVersion != null && currentVersion != null && remoteVersion <= currentVersion) return;
-                var res = MessageBox.Show("HedgeConfig has a new update. Would you like to download it?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+
+                var targetVersionLabel = nextMinorRelease != null ? $" v{nextMinorRelease}" : string.Empty;
+                var res = MessageBox.Show($"HedgeConfig has a new minor update{targetVersionLabel}. Would you like to open the releases page?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                 if (res == DialogResult.Yes)
                 {
                     const string url = "https://github.com/EM20080/HedgeConfig/releases/";
@@ -88,7 +106,7 @@ namespace HedgeConfig
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("HedgeConfigUpdateChecker/1.0");
                 client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
-                client.Timeout = TimeSpan.FromSeconds(6);
+                client.Timeout = TimeSpan.FromSeconds(8);
                 return client.GetStringAsync(url).GetAwaiter().GetResult();
             }
             catch { return string.Empty; }
