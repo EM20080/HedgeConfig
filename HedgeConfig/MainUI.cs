@@ -368,8 +368,9 @@ namespace HedgeConfig
             }
 
             var elements = new List<JsonElement>();
-            foreach (var opt in options)
+            for (int i = 0; i < options.Count; i++)
             {
+                var opt = options[i];
                 if (opt.OriginalJsonElement == null)
                 {
                     opt.OriginalJsonElement = new JsonElement
@@ -381,6 +382,8 @@ namespace HedgeConfig
                     };
                 }
                 var el = opt.OriginalJsonElement;
+                int includeDirIndex = loadRootFolder ? i + 1 : i;
+                el.Name = $"IncludeDir{includeDirIndex}"; // Set IncludeDir1 when root folder is loaded
                 if (opt.Choices.Any())
                 {
                     string enumKey = opt.Name.Replace(" ", "");
