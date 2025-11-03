@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# this sh was made with gpt lmao
 set -euo pipefail
 
 APP_NAME="HedgeConfig"
