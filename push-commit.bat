@@ -3,7 +3,7 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 set "REPO_URL=https://github.com/EM20080/HedgeConfig.git"
 set "REMOTE_NAME=origin"
-set "DEFAULT_BRANCH=hedgeconfig"
+set "DEFAULT_BRANCH=main"
 
 if "%~1"=="" ( set "MSG=update" ) else ( set "MSG=%*" )
 
