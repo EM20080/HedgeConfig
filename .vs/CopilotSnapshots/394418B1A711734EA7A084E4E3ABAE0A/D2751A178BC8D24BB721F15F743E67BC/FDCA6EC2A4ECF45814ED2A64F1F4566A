@@ -1,0 +1,252 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="using:Avalonia.Controls"
+        xmlns:vm="using:HedgeConfig.ViewModels"
+        x:Class="HedgeConfig.Views.MainWindow"
+        mc:Ignorable="d"
+        Width="980" Height="640"
+        MinWidth="760" MinHeight="480"
+        Title="HedgeConfig"
+        WindowStartupLocation="CenterScreen">
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem>
+        <MenuItem.Header>
+          <Grid Width="25" Height="25">
+            <Image Source="/Assets/Folder.png" Stretch="Uniform"/>
+            <Border Classes="icon-overlay" IsHitTestVisible="False">
+              <Border.OpacityMask>
+                <ImageBrush Source="/Assets/Folder.png" Stretch="Uniform"/>
+              </Border.OpacityMask>
+            </Border>
+          </Grid>
+        </MenuItem.Header>
+        <MenuItem Header="Open Existing Config" Command="{Binding OpenConfigCommand}"/>
+        <MenuItem Header="Select mod ini" Command="{Binding SelectModIniCommand}"/>
+        <MenuItem Header="Export Config" Command="{Binding ExportConfigCommand}"/>
+      </MenuItem>
+      <MenuItem>
+        <MenuItem.Header>
+          <Grid Width="35" Height="35">
+            <Image Source="/Assets/Cog.png" Stretch="Uniform"/>
+            <Border Classes="icon-overlay" IsHitTestVisible="False">
+              <Border.OpacityMask>
+                <ImageBrush Source="/Assets/Cog.png" Stretch="Uniform"/>
+              </Border.OpacityMask>
+            </Border>
+          </Grid>
+        </MenuItem.Header>
+        <MenuItem Header="Toggle Light/Dark" Command="{Binding ToggleThemeCommand}"/>
+      </MenuItem>
+    </Menu>
+    <Grid ColumnDefinitions="*,2*" RowDefinitions="Auto,*">
+      <ScrollViewer Grid.Column="0" Grid.RowSpan="2">
+        <ItemsControl ItemsSource="{Binding Options}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical" Spacing="8"/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Button Margin="4" Padding="0" Background="Transparent" BorderThickness="0"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                      Command="{Binding $parent[Window].DataContext.SelectOptionCommand}"
+                      CommandParameter="{Binding}">
+                <Border Margin="4" Padding="12" CornerRadius="8" 
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="2">
+                  <StackPanel>
+                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+                    <TextBlock Text="{Binding Description}" 
+                               FontSize="11" 
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               TextWrapping="Wrap"
+                               MaxWidth="220"
+                               Margin="0,4,0,0"
+                               IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                    <TextBlock Text="{Binding Choices.Count, StringFormat='Choices: {0}'}" 
+                               FontSize="12" 
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               Margin="0,4,0,0"/>
+                  </StackPanel>
+                </Border>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <StackPanel Grid.Column="1" Grid.Row="0" Margin="16,8" Spacing="4">
+        <TextBlock Text="Setting Configuration" FontSize="18" FontWeight="SemiBold"/>
+        <TextBlock Text="{Binding SelectedOptionIndex, StringFormat='Selected Index: {0}'}" 
+                   FontSize="12" 
+                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"/>
+      </StackPanel>
+      <Grid Grid.Column="1" Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="16">
+        <StackPanel Grid.RowSpan="5"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Spacing="16"
+                   IsVisible="{Binding !HasSelectedOption}">
+          <TextBlock Text="Get Started"
+                     FontSize="20"
+                     FontWeight="Bold"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="Create your first setting to begin building your config"
+                     FontSize="14"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                     TextWrapping="Wrap"
+                     TextAlignment="Center"
+                     MaxWidth="300"/>
+          <Button Content="Add Setting" 
+                  Command="{Binding AddOptionCommand}"
+                  Padding="20,12"
+                  FontSize="16"
+                  FontWeight="SemiBold"
+                  HorizontalAlignment="Center"/>
+          <TextBlock Text="or load an existing config from File menu"
+                     FontSize="12"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                     TextAlignment="Center"
+                     FontStyle="Italic"/>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="0" Spacing="8" IsVisible="{Binding HasSelectedOption}">
+          <TextBlock Text="Setting Management" FontWeight="SemiBold" FontSize="14"/>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Add Setting" 
+                    Command="{Binding AddOptionCommand}"
+                    Padding="12,8"/>
+            <Button Content="Delete Setting" 
+                    Command="{Binding DeleteOptionCommand}"
+                    IsEnabled="{Binding HasSelectedOption}"
+                    Padding="12,8"/>
+            <Button Content="Rename Setting" 
+                    Command="{Binding RenameOptionCommand}"
+                    IsEnabled="{Binding HasSelectedOption}"
+                    Padding="12,8"/>
+          </StackPanel>
+          
+          <StackPanel Spacing="8" Margin="0,12,0,0">
+            <TextBlock Text="Setting Description:" FontWeight="Medium"/>
+            <TextBox Text="{Binding SelectedOptionDescription}"
+                     Watermark="Enter a description for this setting (e.g., 'Choose which track you want to listen to!')"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="60"
+                     MaxHeight="120"
+                     FontSize="13"
+                     Foreground="{DynamicResource TextControlForeground}"
+                     Background="{DynamicResource TextControlBackground}"
+                     SelectionBrush="{DynamicResource SystemAccentColor}"
+                     SelectionForegroundBrush="{DynamicResource SystemAccentColorDark1}"/>
+            <TextBlock Text="This description will help users understand what this setting does"
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                       TextWrapping="Wrap"/>
+          </StackPanel>
+        </StackPanel>
+
+        <Separator Grid.Row="1" Margin="0,12,0,12" IsVisible="{Binding HasSelectedOption}"/>
+
+        <StackPanel Grid.Row="2" Spacing="8" IsVisible="{Binding HasSelectedOption}">
+          <TextBlock Text="Choice Management" FontWeight="SemiBold" FontSize="14"/>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Add Choice" 
+                    Command="{Binding AddChoiceCommand}"
+                    Padding="12,8"
+                    FontWeight="SemiBold"/>
+            <Button Content="Delete Choice" 
+                    Command="{Binding DeleteChoiceCommand}"
+                    IsEnabled="{Binding HasSelectedChoice}"
+                    Padding="12,8"/>
+            <Button Content="Rename Choice" 
+                    Command="{Binding RenameChoiceCommand}"
+                    IsEnabled="{Binding HasSelectedChoice}"
+                    Padding="12,8"/>
+          </StackPanel>
+        </StackPanel>
+
+        <Separator Grid.Row="3" Margin="0,12,0,12" IsVisible="{Binding HasSelectedOption}"/>
+        
+        <Border Grid.Row="4" 
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" 
+                BorderThickness="1" 
+                CornerRadius="4" 
+                Padding="12"
+                IsVisible="{Binding HasSelectedOption}">
+          <StackPanel Spacing="12">
+            <TextBlock Text="Choice Details" FontWeight="SemiBold" FontSize="14"/>
+            
+            <StackPanel Spacing="8">
+              <TextBlock Text="Selected Choice:" FontWeight="Medium"/>
+              <ComboBox ItemsSource="{Binding CurrentEnumChoices}" 
+                        SelectedIndex="{Binding SelectedChoiceIndex}"
+                        HorizontalAlignment="Stretch"
+                        MinHeight="32">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}" FontSize="13"/>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            
+            <StackPanel Spacing="8">
+              <TextBlock Text="Folder Name:" FontWeight="Medium"/>
+              <TextBox Text="{Binding SelectedChoiceFolderName}"
+                       Watermark="Enter folder name (e.g., New_Music)"
+                       IsEnabled="{Binding HasSelectedChoice}"
+                       MinHeight="32"
+                       FontSize="13"
+                       Foreground="{DynamicResource TextControlForeground}"
+                       Background="{DynamicResource TextControlBackground}"
+                       SelectionBrush="{DynamicResource SystemAccentColor}"
+                       SelectionForegroundBrush="{DynamicResource SystemAccentColorDark1}"/>
+              <TextBlock Text="This folder will be loaded when this choice is selected"
+                         FontSize="11"
+                         Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                         TextWrapping="Wrap"/>
+            </StackPanel>
+            
+            <StackPanel Spacing="8">
+              <TextBlock Text="Choice Description:" FontWeight="Medium"/>
+              <TextBox Text="{Binding SelectedChoiceDescription}"
+                       Watermark="Enter a description for this choice (e.g., 'Changes Sonic's Voice.')"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       MinHeight="60"
+                       MaxHeight="100"
+                       IsEnabled="{Binding HasSelectedChoice}"
+                       FontSize="13"
+                       Foreground="{DynamicResource TextControlForeground}"
+                       Background="{DynamicResource TextControlBackground}"
+                       SelectionBrush="{DynamicResource SystemAccentColor}"
+                       SelectionForegroundBrush="{DynamicResource SystemAccentColorDark1}"/>
+              <TextBlock Text="This description will help users understand what this choice does"
+                         FontSize="11"
+                         Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                         TextWrapping="Wrap"/>
+            </StackPanel>
+            
+            <Separator Margin="0,8,0,8"/>
+            
+            <CheckBox Content="Load Root folder with settings"
+                      IsChecked="{Binding LoadRootFolder}"
+                      FontSize="13">
+              <ToolTip.Tip>
+                <TextBlock Text="When enabled, loads the root mod folder (.) as IncludeDir0, then loads setting folders starting from IncludeDir1"
+                           TextWrapping="Wrap"
+                           MaxWidth="300"/>
+              </ToolTip.Tip>
+            </CheckBox>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Grid>
+  </DockPanel>
+</Window>

@@ -1,0 +1,48 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HedgeConfig.App"
+             RequestedThemeVariant="Default">
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="Window">
+      <Style Selector="^[RequestedThemeVariant=Dark]">
+        <Setter Property="Background" Value="#1E1E1E"/>
+      </Style>
+      <Style Selector="^[RequestedThemeVariant=Light]">
+        <Setter Property="Background" Value="#FFFFFF"/>
+      </Style>
+    </Style>
+    
+    <!-- Icon overlay styles for theme support -->
+    <Style Selector="Border.icon-overlay">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    
+    <Style Selector="Window[RequestedThemeVariant=Dark] Border.icon-overlay">
+      <Setter Property="Background" Value="#FFFFFF"/>
+      <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+    
+    <!-- Apply effect to icons in dark mode -->
+    <Style Selector="Window[RequestedThemeVariant=Dark] Image[Source*='Cog.png'], Window[RequestedThemeVariant=Dark] Image[Source*='Folder.png']">
+      <Setter Property="Opacity" Value="0"/>
+    </Style>
+  </Application.Styles>
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="#F3F3F3"/>
+          <SolidColorBrush x:Key="IconColorBrush" Color="#000000"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="#1E1E1E"/>
+          <SolidColorBrush x:Key="IconColorBrush" Color="#FFFFFF"/>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://HedgeConfig/Styles/Accent.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

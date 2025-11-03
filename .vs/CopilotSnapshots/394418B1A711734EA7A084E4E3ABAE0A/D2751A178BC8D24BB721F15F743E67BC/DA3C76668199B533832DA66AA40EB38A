@@ -1,0 +1,51 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HedgeConfig.App"
+             RequestedThemeVariant="Default">
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="Window">
+      <Style Selector="^[RequestedThemeVariant=Dark]">
+        <Setter Property="Background" Value="#1E1E1E"/>
+      </Style>
+      <Style Selector="^[RequestedThemeVariant=Light]">
+        <Setter Property="Background" Value="#FFFFFF"/>
+      </Style>
+    </Style>
+    
+    <!-- Icon color styles for theme support -->
+    <Style Selector="Image.theme-icon">
+      <!-- Light theme: keep original colors -->
+      <Setter Property="Opacity" Value="1"/>
+    </Style>
+    
+    <Style Selector="Window[RequestedThemeVariant=Dark] Image.theme-icon">
+      <!-- Dark theme: invert to white -->
+      <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+    
+    <!-- Apply filter to make icons white in dark mode using RenderTransform -->
+    <Style Selector="Window[RequestedThemeVariant=Dark] Image[Source*='Cog.png']">
+      <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+    
+    <Style Selector="Window[RequestedThemeVariant=Dark] Image[Source*='Folder.png']">
+      <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+  </Application.Styles>
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="#F3F3F3"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="#1E1E1E"/>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://HedgeConfig/Styles/Accent.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>
